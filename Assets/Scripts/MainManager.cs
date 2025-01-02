@@ -11,10 +11,15 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
+
+    private string playerName;
     
     private bool m_Started = false;
     private int m_Points;
+    private string m_BestScorerName;
+    private int m_BestScore;
     
     private bool m_GameOver = false;
 
@@ -22,6 +27,12 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        playerName = DataManager.Instance.playerName;
+        SetScore(0);
+        m_BestScorerName = DataManager.Instance.bestScorerName;
+        m_BestScore = DataManager.Instance.bestScore;
+        BestScoreText.text = $"Best Score: {m_BestScorerName} - {m_BestScore}";
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -53,11 +64,12 @@ public class MainManager : MonoBehaviour
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
         }
+        
         else if (m_GameOver)
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                SceneManager.LoadScene(0);
             }
         }
     }
@@ -65,12 +77,28 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = $"Score : {m_Points}";
+        SetScore(m_Points);
+
+        if(m_BestScore < m_Points)
+        {
+            SetBestScore(playerName, m_Points);
+        }
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+    }
+
+    private void SetScore(int points)
+    {
+        ScoreText.text = $"Score : {playerName} - {points}";
+    }
+
+    private void SetBestScore(string playerName, int score)
+    {
+        BestScoreText.text = $"Best Score: {playerName} - {score}";
+        DataManager.Instance.SetBestScore(playerName,score);
     }
 }
